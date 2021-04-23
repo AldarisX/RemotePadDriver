@@ -88,5 +88,23 @@ namespace RemotePadDriver
             });
             netProc.StartClient(IPAddress.Parse(server), Convert.ToInt32(serverPort));
         }
+
+        private void Button_Xbox_Click(object sender, RoutedEventArgs e)
+        {
+            PadObj selectedPad = (PadObj)dgPadList.SelectedItem;
+            padManager.SwitchType(selectedPad.Id, PadType.Xbox360);
+        }
+
+        private void Button_DS4_Click(object sender, RoutedEventArgs e)
+        {
+            PadObj selectedPad = (PadObj)dgPadList.SelectedItem;
+            padManager.SwitchType(selectedPad.Id, PadType.Ds4);
+        }
+
+        private void btnStop_Click(object sender, RoutedEventArgs e)
+        {
+            padManager.Shutdown();
+            netProc.Shutdown();
+        }
     }
 }

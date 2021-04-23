@@ -17,15 +17,27 @@
         <Label Content=":" HorizontalAlignment="Left" Margin="190,40,0,0" VerticalAlignment="Top"/>
         <TextBox x:Name="tbServerPort" HorizontalAlignment="Left" Height="25" Margin="208,40,0,0" TextWrapping="Wrap" Text="3360" VerticalAlignment="Top" Width="45" VerticalContentAlignment="Center"/>
         <Button x:Name="btnClient" Content="连接" HorizontalAlignment="Left" Margin="258,40,0,0" VerticalAlignment="Top" Width="45" Height="25" Click="btnClient_Click"/>
-        <DataGrid x:Name="dgPadList" HorizontalAlignment="Left" Height="350" Margin="324,10,0,0" VerticalAlignment="Top" Width="460" AutoGenerateColumns="False">
+        <DataGrid x:Name="dgPadList" HorizontalAlignment="Left" Height="350" Margin="324,10,0,0" VerticalAlignment="Top" Width="460" AutoGenerateColumns="False" IsReadOnly="True">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="150"/>
                 <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="80"/>
                 <DataGridTextColumn Header="Delay" Binding="{Binding Delay}" Width="80"/>
+                <DataGridTemplateColumn Header="操作" MinWidth="120">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="Xbox"  Click="Button_Xbox_Click" />
+                                <Button Content="DS4"  Click="Button_DS4_Click" />
+                            </StackPanel>
+
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
         <Label Content="服务端延迟" HorizontalAlignment="Left" Margin="597,386,0,0" VerticalAlignment="Top"/>
         <Label x:Name="lbDelay" Content="" HorizontalAlignment="Left" Margin="689,386,0,0" VerticalAlignment="Top" Width="95" HorizontalContentAlignment="Right"/>
+        <Button x:Name="btnStop" Content="停止" HorizontalAlignment="Left" Margin="10,70,0,0" VerticalAlignment="Top" Height="25" Click="btnStop_Click"/>
 
     </Grid>
 </Window>
