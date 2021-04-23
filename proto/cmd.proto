@@ -1,0 +1,77 @@
+syntax = "proto3";
+package common ;
+option go_package = "common/";
+option csharp_namespace = "RemotePadDriver";
+option java_package = "cn.misakanet.proto";
+
+enum CmdType {
+  T_Hello    = 0;
+  T_Ping     = 1;
+  T_Pad_Type = 2;
+  T_Pad_Data = 3;
+}
+
+enum MsgType {
+  Server = 0;
+  Driver = 1;
+  Pad    = 2;
+}
+
+message Data {
+  CmdType    cmd     = 1;
+  string id          = 2;
+  MsgType    msgType = 3;
+  string to          = 4;
+  Hello      hello   = 5;
+  Ping       ping    = 6;
+  PadType    padType = 7;
+  PadBtnData padData = 8;
+}
+
+message Hello {
+  string group     = 1;
+  string id        = 2;
+  string name      = 3;
+  string msg       = 4;
+  string serverMsg = 5;
+  bool order = 6;
+}
+
+message Ping {
+  int64 time = 1;
+}
+
+enum PadType {
+  DS4     = 0;
+  Xbox360 = 1;
+}
+
+enum PadBtn {
+  A           = 0;
+  B           = 1;
+  Y           = 2;
+  X           = 3;
+  LB          = 4;
+  RB          = 5;
+  L3          = 6;
+  R3          = 7;
+  Start       = 8;
+  Select      = 9;
+  Xbox        = 10;
+  L2          = 11;
+  R2          = 12;
+  LAX         = 13;
+  LAY         = 14;
+  RAX         = 15;
+  RAY         = 16;
+  DUP         = 17;
+  DDOWN       = 18;
+  DLEFT       = 19;
+  DRIGHT      = 20;
+  DS4TouchPad = 21;
+}
+
+message PadBtnData {
+  PadBtn btnType = 1;
+  int32  btnVal  = 2;
+}
