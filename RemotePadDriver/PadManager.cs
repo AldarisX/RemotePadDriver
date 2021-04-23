@@ -71,15 +71,15 @@ namespace RemotePadDriver
         {
             PadObj padObj = Contains(id);
             if (padObj != null)
-                padObj.Socket = null;
+                padObj.TcpClient = null;
         }
 
-        public void Add(string id, Socket socket)
+        public void Add(string id, TcpClient client)
         {
             PadObj padObj = new PadObj() {
                 Id = id,
                 LastHB = Util.GetTime(),
-                Socket = socket,
+                TcpClient = client,
             };
             Dispatcher.BeginInvoke(new Action(() =>
             {
@@ -97,10 +97,19 @@ namespace RemotePadDriver
 
         public void Remove(PadObj padObj)
         {
-            if (padObj.Socket != null)
-                padObj.Socket.Close();
-            if (padObj.Pad != null)
-                padObj.Pad.Disconnect();
+            padObj.Ready = false;
+            if (padObj.TcpClient != null)
+                padObj.TcpClient.Close();
+            try
+            {
+                if (padObj.Pad != null)
+                    padObj.Pad.Disconnect();
+            }
+            catch (VigemTargetNotPluggedInException e)
+            {
+
+            }
+            
             Dispatcher.BeginInvoke(new Action(() =>
             {
                 padList.Remove(padObj);
@@ -403,6 +412,14 @@ namespace RemotePadDriver
                         break;
                 }
             //}));
+        }
+
+        public void Shutdown()
+        {
+            for(int i = 0; i < padList.Count; i++)
+            {
+                Remove(padList[0]);
+            }
         }
 
         private short CalcAxisVal(int rate, int left, bool positive)

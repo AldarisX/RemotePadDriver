@@ -10,21 +10,22 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using System.Windows;
 
 namespace RemotePadDriver
 {
     class NetProc
     {
         private string id = System.Guid.NewGuid().ToString();
-        private int ReceiveBufferSize = 512;
+        private int ReceiveBufferSize = 1024;
         private static NetProc netProc;
         private PadManager padManager = PadManager.GetInstance();
 
         private System.Timers.Timer hbTimer = new System.Timers.Timer();
 
-        private Socket serverSocket;
-        private List<Socket> tempSocketList = new List<Socket>();
-        private Socket clientSocket;
+        private TcpListener tcpListener;
+        private TcpClient tcpClient;
+        private List<TcpClient> tempSocketList = new List<TcpClient>();
 
         public delegate void ServerDelay(double delay);
         public ServerDelay serverDelayCall;
@@ -34,7 +35,8 @@ namespace RemotePadDriver
         //private Mutex hbLock = new Mutex();
         private long lastHBTime = 0;
 
-        public NetProc() {
+        public NetProc()
+        {
             ThreadPool.SetMaxThreads(16, 8);
         }
 
@@ -55,15 +57,25 @@ namespace RemotePadDriver
 
         public void StartClient(IPAddress ipa, int port)
         {
-            if (clientSocket != null && clientSocket.Connected)
+            if (tcpClient != null && tcpClient.Connected)
                 return;
-            clientSocket = new Socket(ipa.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-            clientSocket.ReceiveBufferSize = ReceiveBufferSize;
-            clientSocket.NoDelay = true;
-            clientSocket.BeginConnect(new IPEndPoint(ipa, port), connResult =>
+            tcpClient = new TcpClient();
+            tcpClient.ReceiveBufferSize = ReceiveBufferSize;
+            tcpClient.NoDelay = true;
+            tcpClient.BeginConnect(ipa, port, result =>
             {
-                clientSocket.EndConnect(connResult);
-
+                try
+                {
+                    tcpClient.EndConnect(result);
+                }
+                catch (SocketException e)
+                {
+                    Console.WriteLine(e.Message);
+                    Console.WriteLine(e.ErrorCode);
+                    MessageBox.Show("连接服务器失败");
+                    return;
+                }
+                NetworkStream stream = tcpClient.GetStream();
                 AES256 aes = new AES256();
                 //发送hello
                 Data protoData = new Data()
@@ -77,213 +89,101 @@ namespace RemotePadDriver
                     },
                 };
                 lastHBTime = Util.GetTime();
-                AsyncSend(clientSocket, protoData);
-                AsyncRecive(clientSocket);
+                AsyncSend(tcpClient, protoData);
+                AsyncRecive(tcpClient, stream);
             }, null);
         }
 
         public void StartServer(IPAddress ipa, int port)
         {
-            if (serverSocket != null && serverSocket.Connected)
+            if (tcpListener != null)
                 return;
-            serverSocket = new Socket(ipa.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-            serverSocket.ReceiveBufferSize = ReceiveBufferSize;
-            serverSocket.NoDelay = true;
-            serverSocket.Bind(new IPEndPoint(ipa, port));  //绑定IP地址：端口  
-            serverSocket.Listen(10);//设定最多个排队连接请求
+            tcpListener = new TcpListener(ipa, port);
+            tcpListener.Server.ReceiveBufferSize = ReceiveBufferSize;
+            //serverSocket.NoDelay = true;
+            //serverSocket.Bind(new IPEndPoint(ipa, port));  //绑定IP地址：端口  
+            //serverSocket.Listen(10);//设定最多个排队连接请求
+            tcpListener.Start();
 
-            while (serverSocket.IsBound)
+            while (tcpListener.Server.IsBound)
             {
                 allDone.Reset();
-
-                serverSocket.BeginAccept(result =>
+                tcpListener.BeginAcceptTcpClient(result =>
                 {
                     allDone.Set();
-                    Socket socket = serverSocket.EndAccept(result);
-                    socket.NoDelay = true;
-                    tempSocketList.Add(socket);
-                    AsyncRecive(socket);
+                    TcpClient client = tcpListener.EndAcceptTcpClient(result);
+                    client.NoDelay = true;
+                    client.ReceiveBufferSize = ReceiveBufferSize;
+                    tempSocketList.Add(client);
+                    NetworkStream stream = client.GetStream();
+                    AsyncRecive(client, stream);
                 }, null);
 
                 allDone.WaitOne();
             }
         }
 
-        //private async void AsyncRecive(Socket socket)
-        //{
-        //    await Task.Run(new Action(() =>
-        //    {
-        //        try
-        //        {
-        //            if (!socket.Connected)
-        //                return;
-        //            byte[] dataLen = new byte[4];
-        //            socket.Receive(dataLen);
-        //            int len = BitConverter.ToInt32(dataLen, 0);
-        //            if (len <= 0)
-        //            {
-        //                AsyncRecive(socket);
-        //                return;
-        //            }
-        //            byte[] data = new byte[len];
-        //            socket.Receive(data);
-        //            Data protoData = Data.Parser.ParseFrom(data);
-        //            Debug.WriteLine("REC: LEN({0})", len);
-        //            Debug.WriteLine(protoData);
-        //            procProtoData(socket, protoData);
-        //            AsyncRecive(socket);
-        //        }
-        //        catch (InvalidProtocolBufferException e)
-        //        {
-        //            Console.WriteLine(e);
-        //            return;
-        //        }
-        //        catch (SocketException e)
-        //        {
-        //            Debug.WriteLine("socket exception {0}", e.ErrorCode);
-        //            //return;
-        //        }
-        //    }));
-        //}
-
-        private async void AsyncRecive(Socket socket)
+        private async void AsyncRecive(TcpClient client, NetworkStream stream)
         {
-            await Task.Run(() =>
+            if (!client.Connected)
+                return;
+            try
             {
-                if (!socket.Connected)
+                byte[] dataLen = new byte[4];
+                await stream.ReadAsync(dataLen, 0, 4);
+                int len = BitConverter.ToInt32(dataLen, 0);
+                if (len <= 0)
+                {
+                    AsyncRecive(client, stream);
                     return;
-                try
-                {
-                    byte[] dataLen = new byte[4];
-                    socket.BeginReceive(dataLen, 0, dataLen.Length, SocketFlags.None, lenResult =>
-                    {
-                        try
-                        {
-                            if (!socket.Connected)
-                                return;
-                            byte[] dataLenD = (byte[])lenResult.AsyncState;
-                            socket.EndReceive(lenResult);
-                            int len = BitConverter.ToInt32(dataLenD, 0);
-                            if (len <= 0)
-                            {
-                                AsyncRecive(socket);
-                                return;
-                            }
-                            byte[] data = new byte[len];
-                            socket.Receive(data);
-                            try
-                            {
-                                Debug.WriteLine("REC: LEN({0})", len);
-
-                                AsyncRecive(socket);
-                                procProtoData(socket, data);
-                            }
-                            catch (SocketException e)
-                            {
-                                Debug.WriteLine("socket exception {0}", e.ErrorCode);
-                                return;
-                            }
-                            //socket.BeginReceive(data, 0, data.Length, SocketFlags.None, dataResult =>
-                            //{
-                            //    try
-                            //    {
-                            //        byte[] dataD = (byte[])dataResult.AsyncState;
-                            //        socket.EndReceive(dataResult);
-                            //        Data protoData = Data.Parser.ParseFrom(dataD);
-                            //        Debug.WriteLine("REC: LEN({0})", len);
-                            //        Debug.WriteLine(protoData);
-                            //        AsyncRecive(socket);
-                            //        procProtoData(socket, protoData);
-                            //    }
-                            //    catch (SocketException e)
-                            //    {
-                            //        Debug.WriteLine("socket exception {0}", e.ErrorCode);
-                            //        return;
-                            //    }
-                            //    catch (InvalidProtocolBufferException e)
-                            //    {
-                            //        Console.WriteLine(e);
-                            //        return;
-                            //    }
-                            //}, data);
-                        }
-                        catch (SocketException e)
-                        {
-                            Debug.WriteLine("socket exception {0}", e.ErrorCode);
-                            return;
-                        }
-                    }, dataLen);
                 }
-                catch (SocketException e)
-                {
-                    Debug.WriteLine("socket exception {0}", e.ErrorCode);
-                    Console.WriteLine("procData");
-                    Console.WriteLine(e.Message);
-                    AsyncRecive(socket);
-                }
-            });
-        }
-
-        private async Task<byte[]> AsyncRecive(Socket socket, int len, int offset, byte[] data)
-        {
-            return await Task.Run(async () =>
+                byte[] data = new byte[len];
+                await stream.ReadAsync(data, 0, len);
+                AsyncRecive(client, stream);
+                procProtoData(client, data);
+            }
+            catch (IOException e)
             {
-                int recLen = socket.Receive(data, offset, len, SocketFlags.None);
-                if (recLen < len)
-                {
-                    _ = await AsyncRecive(socket, len - recLen, recLen - 1, data);
-                }
-                return data;
-            });
+                Console.WriteLine(e.Message);
+                MessageBox.Show("与服务器连接断开");
+                AsyncRecive(client, stream);
+            }
+            catch (SocketException e)
+            {
+                Console.WriteLine(e.Message);
+                Console.WriteLine("socket exception {0}", e.ErrorCode);
+                MessageBox.Show("与服务器连接断开");
+                AsyncRecive(client, stream);
+            }
         }
 
-        private void AsyncSend(Socket socket, Data protoData)
+        private async void AsyncSend(TcpClient client, Data protoData)
         {
-            //await Task.Run(new Action(() =>
-            //{
-                //sLock.WaitOne();
-                protoData.Id = id;
-                byte[] data = protoData.ToByteArray();
-                byte[] len = BitConverter.GetBytes(data.Length);
-                using (var stream = new MemoryStream())
-                {
-                    stream.Write(len, 0, len.Length);
-                    stream.Write(data, 0, data.Length);
-                    data = stream.ToArray();
-                }
-                try
-                {
-                    //socket.Send(data);
-                    //Debug.WriteLine("SEND: LEN({0})", data.Length);
-                    //Debug.WriteLine(protoData);
-
-                    socket.BeginSend(data, 0, data.Length, SocketFlags.None, lenResult =>
-                    {
-                        //socket.Send(data);
-                        socket.EndSend(lenResult);
-                        Debug.WriteLine("SEND: LEN({0})", data.Length);
-                        Debug.WriteLine(protoData);
-                        //sLock.ReleaseMutex();
-                    }, null);
-                }
-                catch (SocketException e)
-                {
-                    //sLock.ReleaseMutex();
-                }
-                finally
-                {
-                    //sLock.ReleaseMutex();
-                }
-            //}));
-            
+            NetworkStream stream = client.GetStream();
+            protoData.Id = id;
+            byte[] data = protoData.ToByteArray();
+            byte[] len = BitConverter.GetBytes(data.Length);
+            await stream.WriteAsync(len, 0, len.Length);
+            await stream.WriteAsync(data, 0, data.Length);
+            stream.Flush();
         }
 
-        private async void procProtoData(Socket socket, byte[] data)
+        private async void procProtoData(TcpClient client, byte[] data)
         {
             await Task.Run(() =>
             {
-                Data protoData = Data.Parser.ParseFrom(data);
-                Debug.WriteLine(protoData);
+                Data protoData = null;
+                try
+                {
+                    protoData = Data.Parser.ParseFrom(data);
+                }
+                catch (InvalidProtocolBufferException e)
+                {
+                    Console.WriteLine(e.Message);
+                    return;
+                }
+
+                //Debug.WriteLine(protoData);
 
                 switch (protoData.Cmd)
                 {
@@ -301,9 +201,9 @@ namespace RemotePadDriver
                                         Console.WriteLine("unkonw client wrong text");
                                         break;
                                     }
-                                    padManager.Add(protoData.Id, socket);
+                                    padManager.Add(protoData.Id, client);
                                     protoData.MsgType = MsgType.Driver;
-                                    AsyncSend(socket, protoData);
+                                    AsyncSend(client, protoData);
                                 }
                                 catch (CryptographicException e)
                                 {
@@ -366,10 +266,10 @@ namespace RemotePadDriver
                 PadObj padObj = padManager.PadList[i];
                 if (time - padObj.LastHB > 10 * 100000)
                 {
-                    if (padObj.Socket != null && padObj.Socket != clientSocket)
+                    if (padObj.TcpClient != null && padObj.TcpClient != tcpClient)
                     {
-                        if (padObj.Socket.Connected)
-                            Debug.WriteLine("HB timeout {0}", padObj.Socket.RemoteEndPoint.ToString());
+                        if (padObj.TcpClient.Connected)
+                            Debug.WriteLine("HB timeout {0}", padObj.TcpClient.Client.RemoteEndPoint.ToString());
                     }
                     else
                     {
@@ -379,27 +279,35 @@ namespace RemotePadDriver
                     i--;
                     continue;
                 }
-                if (padObj.Socket != null)
+                if (padObj.TcpClient != null)
                 {
-                    AsyncSend(padObj.Socket, protoData);
+                    AsyncSend(padObj.TcpClient, protoData);
                 }
                 else
                 {
-                    AsyncSend(clientSocket, protoData);
+                    AsyncSend(tcpClient, protoData);
                 }
             }
-            if (clientSocket != null && clientSocket.Connected)
+            if (tcpClient != null && tcpClient.Connected)
             {
                 if (time - lastHBTime > 10 * 100000)
                 {
                     Debug.WriteLine("Server HB timeout");
-                    clientSocket.Close();
+                    tcpClient.Close();
                     return;
                 }
                 //if (serverDelayCall != null)
                 //    serverDelayCall((lastHBTime - protoData.Ping.Time) / 10D);
-                AsyncSend(clientSocket, protoData);
+                AsyncSend(tcpClient, protoData);
             }
+        }
+
+        public void Shutdown()
+        {
+            if (tcpClient != null && tcpClient.Connected)
+                tcpClient.Close();
+            if (tcpListener != null && tcpListener.Pending())
+                tcpListener.Stop();
         }
     }
 }

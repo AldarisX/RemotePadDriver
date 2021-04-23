@@ -12,7 +12,7 @@ namespace RemotePadDriver
         private string delay;
         private IVirtualGamepad pad;
         private bool ready = false;
-        private Socket socket;
+        private TcpClient tcpClient;
 
         public string Id { get => id; set => id = value; }
         public string Type
@@ -29,7 +29,7 @@ namespace RemotePadDriver
         }
         public long LastHB { get => lastHB; set => lastHB = value; }
         public IVirtualGamepad Pad { get => pad; set => pad = value; }
-        public Socket Socket { get => socket; set => socket = value; }
+        public TcpClient TcpClient { get => tcpClient; set => tcpClient = value; }
         public string Delay { get => delay; set
             {
                 if (delay != value)
