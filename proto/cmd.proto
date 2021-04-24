@@ -9,6 +9,7 @@ enum CmdType {
   T_Ping     = 1;
   T_Pad_Type = 2;
   T_Pad_Data = 3;
+  T_DISCONNECT = 4;
 }
 
 enum MsgType {
@@ -26,6 +27,7 @@ message Data {
   Ping       ping    = 6;
   PadType    padType = 7;
   PadBtnData padData = 8;
+  Disconnect disconnect = 9;
 }
 
 message Hello {
@@ -74,4 +76,8 @@ enum PadBtn {
 message PadBtnData {
   PadBtn btnType = 1;
   int32  btnVal  = 2;
+}
+
+message Disconnect {
+  string id = 1;
 }

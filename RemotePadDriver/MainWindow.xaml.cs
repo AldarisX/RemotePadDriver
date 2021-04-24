@@ -89,6 +89,12 @@ namespace RemotePadDriver
             netProc.StartClient(IPAddress.Parse(server), Convert.ToInt32(serverPort));
         }
 
+        private void btnStop_Click(object sender, RoutedEventArgs e)
+        {
+            padManager.Shutdown();
+            netProc.Shutdown();
+        }
+
         private void Button_Xbox_Click(object sender, RoutedEventArgs e)
         {
             PadObj selectedPad = (PadObj)dgPadList.SelectedItem;
@@ -101,10 +107,10 @@ namespace RemotePadDriver
             padManager.SwitchType(selectedPad.Id, PadType.Ds4);
         }
 
-        private void btnStop_Click(object sender, RoutedEventArgs e)
+        private void Button_PadDisconnect_Click(object sender, RoutedEventArgs e)
         {
-            padManager.Shutdown();
-            netProc.Shutdown();
+            PadObj selectedPad = (PadObj)dgPadList.SelectedItem;
+            netProc.RemoveAsync(selectedPad.TcpClient);
         }
     }
 }

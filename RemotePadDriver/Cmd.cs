@@ -24,32 +24,35 @@ namespace RemotePadDriver {
     static CmdReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "Cg9wcm90by9jbWQucHJvdG8SBmNvbW1vbiLfAQoERGF0YRIcCgNjbWQYASAB",
+            "Cg9wcm90by9jbWQucHJvdG8SBmNvbW1vbiKHAgoERGF0YRIcCgNjbWQYASAB",
             "KA4yDy5jb21tb24uQ21kVHlwZRIKCgJpZBgCIAEoCRIgCgdtc2dUeXBlGAMg",
             "ASgOMg8uY29tbW9uLk1zZ1R5cGUSCgoCdG8YBCABKAkSHAoFaGVsbG8YBSAB",
             "KAsyDS5jb21tb24uSGVsbG8SGgoEcGluZxgGIAEoCzIMLmNvbW1vbi5QaW5n",
             "EiAKB3BhZFR5cGUYByABKA4yDy5jb21tb24uUGFkVHlwZRIjCgdwYWREYXRh",
-            "GAggASgLMhIuY29tbW9uLlBhZEJ0bkRhdGEiXwoFSGVsbG8SDQoFZ3JvdXAY",
-            "ASABKAkSCgoCaWQYAiABKAkSDAoEbmFtZRgDIAEoCRILCgNtc2cYBCABKAkS",
-            "EQoJc2VydmVyTXNnGAUgASgJEg0KBW9yZGVyGAYgASgIIhQKBFBpbmcSDAoE",
-            "dGltZRgBIAEoAyI9CgpQYWRCdG5EYXRhEh8KB2J0blR5cGUYASABKA4yDi5j",
-            "b21tb24uUGFkQnRuEg4KBmJ0blZhbBgCIAEoBSpCCgdDbWRUeXBlEgsKB1Rf",
-            "SGVsbG8QABIKCgZUX1BpbmcQARIOCgpUX1BhZF9UeXBlEAISDgoKVF9QYWRf",
-            "RGF0YRADKioKB01zZ1R5cGUSCgoGU2VydmVyEAASCgoGRHJpdmVyEAESBwoD",
-            "UGFkEAIqHwoHUGFkVHlwZRIHCgNEUzQQABILCgdYYm94MzYwEAEq1QEKBlBh",
-            "ZEJ0bhIFCgFBEAASBQoBQhABEgUKAVkQAhIFCgFYEAMSBgoCTEIQBBIGCgJS",
-            "QhAFEgYKAkwzEAYSBgoCUjMQBxIJCgVTdGFydBAIEgoKBlNlbGVjdBAJEggK",
-            "BFhib3gQChIGCgJMMhALEgYKAlIyEAwSBwoDTEFYEA0SBwoDTEFZEA4SBwoD",
-            "UkFYEA8SBwoDUkFZEBASBwoDRFVQEBESCQoFRERPV04QEhIJCgVETEVGVBAT",
-            "EgoKBkRSSUdIVBAUEg8KC0RTNFRvdWNoUGFkEBVCKQoSY24ubWlzYWthbmV0",
-            "LnByb3RvWgdjb21tb24vqgIJUmVtb3RlUGFkYgZwcm90bzM="));
+            "GAggASgLMhIuY29tbW9uLlBhZEJ0bkRhdGESJgoKZGlzY29ubmVjdBgJIAEo",
+            "CzISLmNvbW1vbi5EaXNjb25uZWN0Il8KBUhlbGxvEg0KBWdyb3VwGAEgASgJ",
+            "EgoKAmlkGAIgASgJEgwKBG5hbWUYAyABKAkSCwoDbXNnGAQgASgJEhEKCXNl",
+            "cnZlck1zZxgFIAEoCRINCgVvcmRlchgGIAEoCCIUCgRQaW5nEgwKBHRpbWUY",
+            "ASABKAMiPQoKUGFkQnRuRGF0YRIfCgdidG5UeXBlGAEgASgOMg4uY29tbW9u",
+            "LlBhZEJ0bhIOCgZidG5WYWwYAiABKAUiGAoKRGlzY29ubmVjdBIKCgJpZBgB",
+            "IAEoCSpUCgdDbWRUeXBlEgsKB1RfSGVsbG8QABIKCgZUX1BpbmcQARIOCgpU",
+            "X1BhZF9UeXBlEAISDgoKVF9QYWRfRGF0YRADEhAKDFRfRElTQ09OTkVDVBAE",
+            "KioKB01zZ1R5cGUSCgoGU2VydmVyEAASCgoGRHJpdmVyEAESBwoDUGFkEAIq",
+            "HwoHUGFkVHlwZRIHCgNEUzQQABILCgdYYm94MzYwEAEq1QEKBlBhZEJ0bhIF",
+            "CgFBEAASBQoBQhABEgUKAVkQAhIFCgFYEAMSBgoCTEIQBBIGCgJSQhAFEgYK",
+            "AkwzEAYSBgoCUjMQBxIJCgVTdGFydBAIEgoKBlNlbGVjdBAJEggKBFhib3gQ",
+            "ChIGCgJMMhALEgYKAlIyEAwSBwoDTEFYEA0SBwoDTEFZEA4SBwoDUkFYEA8S",
+            "BwoDUkFZEBASBwoDRFVQEBESCQoFRERPV04QEhIJCgVETEVGVBATEgoKBkRS",
+            "SUdIVBAUEg8KC0RTNFRvdWNoUGFkEBVCLwoSY24ubWlzYWthbmV0LnByb3Rv",
+            "Wgdjb21tb24vqgIPUmVtb3RlUGFkRHJpdmVyYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::RemotePadDriver.CmdType), typeof(global::RemotePadDriver.MsgType), typeof(global::RemotePadDriver.PadType), typeof(global::RemotePadDriver.PadBtn), }, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::RemotePadDriver.Data), global::RemotePadDriver.Data.Parser, new[]{ "Cmd", "Id", "MsgType", "To", "Hello", "Ping", "PadType", "PadData" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::RemotePadDriver.Data), global::RemotePadDriver.Data.Parser, new[]{ "Cmd", "Id", "MsgType", "To", "Hello", "Ping", "PadType", "PadData", "Disconnect" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::RemotePadDriver.Hello), global::RemotePadDriver.Hello.Parser, new[]{ "Group", "Id", "Name", "Msg", "ServerMsg", "Order" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::RemotePadDriver.Ping), global::RemotePadDriver.Ping.Parser, new[]{ "Time" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::RemotePadDriver.PadBtnData), global::RemotePadDriver.PadBtnData.Parser, new[]{ "BtnType", "BtnVal" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::RemotePadDriver.PadBtnData), global::RemotePadDriver.PadBtnData.Parser, new[]{ "BtnType", "BtnVal" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::RemotePadDriver.Disconnect), global::RemotePadDriver.Disconnect.Parser, new[]{ "Id" }, null, null, null, null)
           }));
     }
     #endregion
@@ -61,6 +64,7 @@ namespace RemotePadDriver {
     [pbr::OriginalName("T_Ping")] TPing = 1,
     [pbr::OriginalName("T_Pad_Type")] TPadType = 2,
     [pbr::OriginalName("T_Pad_Data")] TPadData = 3,
+    [pbr::OriginalName("T_DISCONNECT")] TDisconnect = 4,
   }
 
   public enum MsgType {
@@ -139,6 +143,7 @@ namespace RemotePadDriver {
       ping_ = other.ping_ != null ? other.ping_.Clone() : null;
       padType_ = other.padType_;
       padData_ = other.padData_ != null ? other.padData_.Clone() : null;
+      disconnect_ = other.disconnect_ != null ? other.disconnect_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -235,6 +240,17 @@ namespace RemotePadDriver {
       }
     }
 
+    /// <summary>Field number for the "disconnect" field.</summary>
+    public const int DisconnectFieldNumber = 9;
+    private global::RemotePadDriver.Disconnect disconnect_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::RemotePadDriver.Disconnect Disconnect {
+      get { return disconnect_; }
+      set {
+        disconnect_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Data);
@@ -256,6 +272,7 @@ namespace RemotePadDriver {
       if (!object.Equals(Ping, other.Ping)) return false;
       if (PadType != other.PadType) return false;
       if (!object.Equals(PadData, other.PadData)) return false;
+      if (!object.Equals(Disconnect, other.Disconnect)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -270,6 +287,7 @@ namespace RemotePadDriver {
       if (ping_ != null) hash ^= Ping.GetHashCode();
       if (PadType != global::RemotePadDriver.PadType.Ds4) hash ^= PadType.GetHashCode();
       if (padData_ != null) hash ^= PadData.GetHashCode();
+      if (disconnect_ != null) hash ^= Disconnect.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -318,6 +336,10 @@ namespace RemotePadDriver {
         output.WriteRawTag(66);
         output.WriteMessage(PadData);
       }
+      if (disconnect_ != null) {
+        output.WriteRawTag(74);
+        output.WriteMessage(Disconnect);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -359,6 +381,10 @@ namespace RemotePadDriver {
         output.WriteRawTag(66);
         output.WriteMessage(PadData);
       }
+      if (disconnect_ != null) {
+        output.WriteRawTag(74);
+        output.WriteMessage(Disconnect);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -391,6 +417,9 @@ namespace RemotePadDriver {
       }
       if (padData_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(PadData);
+      }
+      if (disconnect_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Disconnect);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -435,6 +464,12 @@ namespace RemotePadDriver {
           PadData = new global::RemotePadDriver.PadBtnData();
         }
         PadData.MergeFrom(other.PadData);
+      }
+      if (other.disconnect_ != null) {
+        if (disconnect_ == null) {
+          Disconnect = new global::RemotePadDriver.Disconnect();
+        }
+        Disconnect.MergeFrom(other.Disconnect);
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -491,6 +526,13 @@ namespace RemotePadDriver {
             input.ReadMessage(PadData);
             break;
           }
+          case 74: {
+            if (disconnect_ == null) {
+              Disconnect = new global::RemotePadDriver.Disconnect();
+            }
+            input.ReadMessage(Disconnect);
+            break;
+          }
         }
       }
     #endif
@@ -544,6 +586,13 @@ namespace RemotePadDriver {
               PadData = new global::RemotePadDriver.PadBtnData();
             }
             input.ReadMessage(PadData);
+            break;
+          }
+          case 74: {
+            if (disconnect_ == null) {
+              Disconnect = new global::RemotePadDriver.Disconnect();
+            }
+            input.ReadMessage(Disconnect);
             break;
           }
         }
@@ -1276,6 +1325,178 @@ namespace RemotePadDriver {
           }
           case 16: {
             BtnVal = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  public sealed partial class Disconnect : pb::IMessage<Disconnect>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<Disconnect> _parser = new pb::MessageParser<Disconnect>(() => new Disconnect());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<Disconnect> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::RemotePadDriver.CmdReflection.Descriptor.MessageTypes[4]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Disconnect() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Disconnect(Disconnect other) : this() {
+      id_ = other.id_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public Disconnect Clone() {
+      return new Disconnect(this);
+    }
+
+    /// <summary>Field number for the "id" field.</summary>
+    public const int IdFieldNumber = 1;
+    private string id_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string Id {
+      get { return id_; }
+      set {
+        id_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as Disconnect);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(Disconnect other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Id != other.Id) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Id.Length != 0) hash ^= Id.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (Id.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(Id);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (Id.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(Id);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Id.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Id);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(Disconnect other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Id.Length != 0) {
+        Id = other.Id;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            Id = input.ReadString();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            Id = input.ReadString();
             break;
           }
         }

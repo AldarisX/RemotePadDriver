@@ -28,6 +28,7 @@
                             <StackPanel Orientation="Horizontal">
                                 <Button Content="Xbox"  Click="Button_Xbox_Click" />
                                 <Button Content="DS4"  Click="Button_DS4_Click" />
+                                <Button Content="断开"  Click="Button_PadDisconnect_Click" />
                             </StackPanel>
 
                         </DataTemplate>

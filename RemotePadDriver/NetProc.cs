@@ -37,7 +37,7 @@ namespace RemotePadDriver
 
         public NetProc()
         {
-            ThreadPool.SetMaxThreads(16, 8);
+            //ThreadPool.SetMaxThreads(16, 8);
         }
 
         public static NetProc GetInstance()
@@ -100,9 +100,6 @@ namespace RemotePadDriver
                 return;
             tcpListener = new TcpListener(ipa, port);
             tcpListener.Server.ReceiveBufferSize = ReceiveBufferSize;
-            //serverSocket.NoDelay = true;
-            //serverSocket.Bind(new IPEndPoint(ipa, port));  //绑定IP地址：端口  
-            //serverSocket.Listen(10);//设定最多个排队连接请求
             tcpListener.Start();
 
             while (tcpListener.Server.IsBound)
@@ -125,40 +122,44 @@ namespace RemotePadDriver
 
         private async void AsyncRecive(TcpClient client, NetworkStream stream)
         {
-            if (!client.Connected)
-                return;
             try
             {
-                byte[] dataLen = new byte[4];
-                await stream.ReadAsync(dataLen, 0, 4);
-                int len = BitConverter.ToInt32(dataLen, 0);
-                if (len <= 0)
+                while (client.Connected)
                 {
-                    AsyncRecive(client, stream);
-                    return;
+                    byte[] dataLen = new byte[4];
+                    await stream.ReadAsync(dataLen, 0, 4);
+                    int len = BitConverter.ToInt32(dataLen, 0);
+                    if (len <= 0)
+                    {
+                        continue;
+                    }
+                    byte[] data = new byte[len];
+                    await stream.ReadAsync(data, 0, len);
+                    procProtoData(client, data);
                 }
-                byte[] data = new byte[len];
-                await stream.ReadAsync(data, 0, len);
-                AsyncRecive(client, stream);
-                procProtoData(client, data);
             }
-            catch (IOException e)
+            catch(Exception e)
             {
                 Console.WriteLine(e.Message);
-                MessageBox.Show("与服务器连接断开");
-                AsyncRecive(client, stream);
-            }
-            catch (SocketException e)
-            {
-                Console.WriteLine(e.Message);
-                Console.WriteLine("socket exception {0}", e.ErrorCode);
-                MessageBox.Show("与服务器连接断开");
-                AsyncRecive(client, stream);
+                if (e is SocketException)
+                {
+                    var se = (SocketException)e;
+                    Console.WriteLine("socket exception {0}", se.ErrorCode);
+                }
+                if (client != tcpClient)
+                {
+                    padManager.Remove(client);
+                    MessageBox.Show("与服务器连接断开");
+                }
             }
         }
 
-        private async void AsyncSend(TcpClient client, Data protoData)
+        private async Task AsyncSend(TcpClient client, Data protoData)
         {
+            if (client == null)
+                client = tcpClient;
+            if (!client.Connected)
+                return;
             NetworkStream stream = client.GetStream();
             protoData.Id = id;
             byte[] data = protoData.ToByteArray();
@@ -292,14 +293,30 @@ namespace RemotePadDriver
             {
                 if (time - lastHBTime > 10 * 100000)
                 {
-                    Debug.WriteLine("Server HB timeout");
+                    MessageBox.Show("与服务器连接超市");
                     tcpClient.Close();
                     return;
                 }
-                //if (serverDelayCall != null)
-                //    serverDelayCall((lastHBTime - protoData.Ping.Time) / 10D);
                 AsyncSend(tcpClient, protoData);
             }
+        }
+
+        public async Task RemoveAsync(TcpClient client)
+        {
+            PadObj padObj = padManager.Contains(client);
+            if (padObj == null)
+                return;
+            Data protoData = new Data()
+            {
+                Cmd = CmdType.TDisconnect,
+                MsgType = MsgType.Driver,
+                Disconnect = new Disconnect()
+                {
+                    Id = padObj.Id,
+                },
+            };
+            await AsyncSend(padObj.TcpClient, protoData);
+            padManager.Remove(padObj);
         }
 
         public void Shutdown()
