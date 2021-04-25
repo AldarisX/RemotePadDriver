@@ -89,7 +89,7 @@ namespace RemotePadDriver
                     },
                 };
                 lastHBTime = Util.GetTime();
-                AsyncSend(tcpClient, protoData);
+                _ = AsyncSend(tcpClient, protoData);
                 AsyncRecive(tcpClient, stream);
             }, null);
         }
@@ -140,6 +140,7 @@ namespace RemotePadDriver
             }
             catch(Exception e)
             {
+                Console.WriteLine(e.StackTrace);
                 Console.WriteLine(e.Message);
                 if (e is SocketException)
                 {
@@ -204,7 +205,7 @@ namespace RemotePadDriver
                                     }
                                     padManager.Add(protoData.Id, client);
                                     protoData.MsgType = MsgType.Driver;
-                                    AsyncSend(client, protoData);
+                                    _ = AsyncSend(client, protoData);
                                 }
                                 catch (CryptographicException e)
                                 {
@@ -282,22 +283,22 @@ namespace RemotePadDriver
                 }
                 if (padObj.TcpClient != null)
                 {
-                    AsyncSend(padObj.TcpClient, protoData);
+                    _ = AsyncSend(padObj.TcpClient, protoData);
                 }
                 else
                 {
-                    AsyncSend(tcpClient, protoData);
+                    _ = AsyncSend(tcpClient, protoData);
                 }
             }
             if (tcpClient != null && tcpClient.Connected)
             {
                 if (time - lastHBTime > 10 * 100000)
                 {
-                    MessageBox.Show("与服务器连接超市");
+                    MessageBox.Show("与服务器连接超时");
                     tcpClient.Close();
                     return;
                 }
-                AsyncSend(tcpClient, protoData);
+                _ = AsyncSend(tcpClient, protoData);
             }
         }
 
