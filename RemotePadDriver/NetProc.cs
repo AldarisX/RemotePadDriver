@@ -1,6 +1,7 @@
 ﻿using AesEverywhere;
 using Google.Protobuf;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -16,7 +17,7 @@ namespace RemotePadDriver
 {
     class NetProc
     {
-        private string id = System.Guid.NewGuid().ToString();
+        private string id = Guid.NewGuid().ToString();
         private int ReceiveBufferSize = 1024;
         private static NetProc netProc;
         private PadManager padManager = PadManager.GetInstance();
@@ -25,14 +26,14 @@ namespace RemotePadDriver
 
         private TcpListener tcpListener;
         private TcpClient tcpClient;
-        private List<TcpClient> tempSocketList = new List<TcpClient>();
+        private Hashtable tempClientMap = new Hashtable();
 
         public delegate void ServerDelay(double delay);
         public ServerDelay serverDelayCall;
 
-        public ManualResetEvent allDone = new ManualResetEvent(false);
-        private Mutex sLock = new Mutex();
-        //private Mutex hbLock = new Mutex();
+        private ManualResetEvent allDone = new ManualResetEvent(false);
+        private Mutex tempSocketLock = new Mutex();
+
         private long lastHBTime = 0;
 
         public NetProc()
@@ -111,7 +112,7 @@ namespace RemotePadDriver
                     TcpClient client = tcpListener.EndAcceptTcpClient(result);
                     client.NoDelay = true;
                     client.ReceiveBufferSize = ReceiveBufferSize;
-                    tempSocketList.Add(client);
+                    tempClientMap.Add(client, Util.GetTime());
                     NetworkStream stream = client.GetStream();
                     AsyncRecive(client, stream);
                 }, null);
@@ -205,6 +206,9 @@ namespace RemotePadDriver
                                     }
                                     padManager.Add(protoData.Id, client);
                                     protoData.MsgType = MsgType.Driver;
+                                    tempSocketLock.WaitOne();
+                                    tempClientMap.Remove(client);
+                                    tempSocketLock.ReleaseMutex();
                                     _ = AsyncSend(client, protoData);
                                 }
                                 catch (CryptographicException e)
@@ -219,7 +223,7 @@ namespace RemotePadDriver
                         if (protoData.MsgType == MsgType.Server && protoData.Ping == null)
                             break;
                         lastHBTime = Util.GetTime();
-                        double delay = (lastHBTime - protoData.Ping.Time) / 100D;
+                        double delay = Util.Delay(lastHBTime, protoData.Ping.Time);
                         //Debug.WriteLine("client delay " + delay + "ms");
                         if (protoData.MsgType == MsgType.Server)
                         {
@@ -266,7 +270,8 @@ namespace RemotePadDriver
             for (int i = 0; i < padManager.PadList.Count; i++)
             {
                 PadObj padObj = padManager.PadList[i];
-                if (time - padObj.LastHB > 10 * 100000)
+                //心跳时间超过10s
+                if (Util.IsTimeout(time, padObj.LastHB))
                 {
                     if (padObj.TcpClient != null && padObj.TcpClient != tcpClient)
                     {
@@ -275,7 +280,8 @@ namespace RemotePadDriver
                     }
                     else
                     {
-                        //TODO 要求服务端踢手柄端
+                        //要求服务端踢手柄端
+                        _ = RemoveAsync(padObj.TcpClient);
                     }
                     padManager.Remove(padObj);
                     i--;
@@ -300,6 +306,10 @@ namespace RemotePadDriver
                 }
                 _ = AsyncSend(tcpClient, protoData);
             }
+
+            tempSocketLock.WaitOne();
+            //TODO remove tempTcpClient
+            tempSocketLock.ReleaseMutex();
         }
 
         public async Task RemoveAsync(TcpClient client)
@@ -317,7 +327,6 @@ namespace RemotePadDriver
                 },
             };
             await AsyncSend(padObj.TcpClient, protoData);
-            padManager.Remove(padObj);
         }
 
         public void Shutdown()

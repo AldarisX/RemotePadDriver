@@ -110,7 +110,8 @@ namespace RemotePadDriver
         private void Button_PadDisconnect_Click(object sender, RoutedEventArgs e)
         {
             PadObj selectedPad = (PadObj)dgPadList.SelectedItem;
-            netProc.RemoveAsync(selectedPad.TcpClient);
+            _ = netProc.RemoveAsync(selectedPad.TcpClient);
+            padManager.Remove(selectedPad);
         }
     }
 }
