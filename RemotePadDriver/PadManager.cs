@@ -55,6 +55,8 @@ namespace RemotePadDriver
             switch (type)
             {
                 case PadType.Xbox360:
+                    //XboxOne
+                    //padObj.Pad = vigem.CreateXbox360Controller(0x045E, 0x02FF);
                     padObj.Pad = vigem.CreateXbox360Controller();
                     padObj.Type = "Xbox360";
                     break;

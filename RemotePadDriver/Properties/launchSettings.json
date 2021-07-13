@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "RemotePadDriver": {
+      "commandName": "Project",
+      "remoteDebugEnabled": false
+    }
+  }
+}
